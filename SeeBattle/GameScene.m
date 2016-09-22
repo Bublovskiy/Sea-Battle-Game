@@ -15,23 +15,21 @@
 
 
 SKColor* _mainScreenColor;
-SKSpriteNode* cannonSpriteNode;
+SKSpriteNode* _cannonSpriteNode;
 
-//Scales
-double cannonScale = 0.5;
-double cannonPositionShift;
+double _cannonScale = 0.5;
+double _cannonPositionShift;
 
-CGFloat angelOfCannon;
-
+CGFloat _angelOfCannon;
+CGFloat _minYToReact;
 
 //Bit Mask Category
-static const double degreesInOneRad = 57.2958;
-static const int ship = 1 << 0;
-static const int shell = 1 << 1;
+static const double _degreesInOneRad = 57.2958;
+static const int _ship = 1 << 0;
+static const int _shell = 1 << 1;
 
-//pivoting point for the canno
-CGPoint cannonPivotPoint;
-
+//pivoting point for the cannon
+CGPoint _cannonPivotPoint;
 
 
 - (void)didMoveToView:(SKView *)view {
@@ -43,17 +41,18 @@ CGPoint cannonPivotPoint;
     
     //set the Cannon
     
-    SKTexture* cannonTexture = [SKTexture textureWithImageNamed:@"cannon"];
-    cannonSpriteNode = [SKSpriteNode spriteNodeWithTexture:cannonTexture];
-    [cannonSpriteNode setScale: cannonScale];
+    SKTexture* _cannonTexture = [SKTexture textureWithImageNamed:@"cannon"];
+    _cannonSpriteNode = [SKSpriteNode spriteNodeWithTexture:_cannonTexture];
+    [_cannonSpriteNode setScale: _cannonScale];
     
     //create a pivot point for the cannon on the screen
-    cannonPivotPoint.x = CGRectGetMidX(self.frame);
-    cannonPositionShift = cannonSpriteNode.size.height/3;
-    cannonPivotPoint.y = CGRectGetMinY(self.frame) + cannonPositionShift;
+    _cannonPivotPoint.x = CGRectGetMidX(self.frame);
+    _cannonPositionShift = _cannonSpriteNode.size.height/3;
+    _cannonPivotPoint.y = CGRectGetMinY(self.frame) + _cannonPositionShift;
+    _minYToReact = _cannonPivotPoint.y + _cannonSpriteNode.size.height;
     
-    cannonSpriteNode.position = cannonPivotPoint;
-    [self addChild:cannonSpriteNode];
+    _cannonSpriteNode.position = _cannonPivotPoint;
+    [self addChild:_cannonSpriteNode];
     
  }
 
@@ -64,58 +63,36 @@ CGPoint cannonPivotPoint;
 
 - (void)touchMovedToPoint:(CGPoint)pos {
     
+    if (pos.y>=_minYToReact) {
     //slope for the line of touch
     //original cannonPivotPoint.y seats above the screen baseline by 1/3 of the ship's size
-    double slope = (pos.y - (cannonPivotPoint.y-cannonPositionShift))/(pos.x - cannonPivotPoint.x);
+    double _slope = (pos.y - (_cannonPivotPoint.y-_cannonPositionShift))/(pos.x - _cannonPivotPoint.x);
     
     //calculete and angle of inclination in Rad
-    angelOfCannon = atan(slope) < 0 ? 90/degreesInOneRad - fabs(atan(slope)) : -(90/degreesInOneRad - fabs(atan(slope)));
+    _angelOfCannon = atan(_slope) < 0 ? 90/_degreesInOneRad - fabs(atan(_slope)) : -(90/_degreesInOneRad - fabs(atan(_slope)));
     
     //turn the cannon
-    SKAction* cannotTurningAction = [SKAction rotateToAngle:angelOfCannon duration:0.1];
+    SKAction* cannotTurningAction = [SKAction rotateToAngle:_angelOfCannon duration:0.1];
     
-    [cannonSpriteNode runAction:cannotTurningAction];
+    [_cannonSpriteNode runAction:cannotTurningAction];
+    
+    }
 }
 
 - (void)touchUpAtPoint:(CGPoint)pos {
     
-    CGPoint pointOfrecoil = [Geometry_Calculations findCrossPointLine1Point1:pos nLine1Point2:cannonPivotPoint nLine2Point2:CGPointMake(CGRectGetMinX(self.frame), cannonPivotPoint.y-cannonPositionShift) nLine2Point2:CGPointMake(cannonPivotPoint.x, cannonPivotPoint.y-cannonPositionShift)];
+    if (pos.y>=_minYToReact) {
     
-    //CGPoint pointOfrecoil;
-//    
-//    double A1,B1,C1;
-//    double A2,B2,C2;
+        //recoil effect
     
-    /**
+    CGPoint pointOfrecoil = [Geometry_Calculations findCrossPointLine1Point1:pos nLine1Point2:_cannonPivotPoint nLine2Point2:CGPointMake(CGRectGetMinX(self.frame), _cannonPivotPoint.y-_cannonPositionShift) nLine2Point2:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y-_cannonPositionShift)];
     
-    A = lineEndsY-lineStartY;
-    B = lineStartX-lineEndsX;
-    C=A*lineStartX+B*lineStartY;
-    
-    crossX = (B2*C1-B1*C2)/(B2*A1-B1*A2);
-    crossY = (A1*C2-A2*C1)/(A1*B2-A2*B1);
-    
-    **/
-    
-//    A1 = pos.y-cannonPivotPoint.y;
-//    B1 = cannonPivotPoint.x-pos.x;
-//    C1=A1*cannonPivotPoint.x+B1*cannonPivotPoint.y;
-//    
-//    A2 = (cannonPivotPoint.y-cannonPositionShift) - (cannonPivotPoint.y-cannonPositionShift);
-//    B2 = CGRectGetMinX(self.frame)-cannonPivotPoint.x;
-//    C2 = A2*CGRectGetMinX(self.frame)+B2*(cannonPivotPoint.y-cannonPositionShift);
-//    
-//    //ger point of intersection
-//    pointOfrecoil.x = (B2*C1-B1*C2)/(B2*A1-B1*A2);
-//    pointOfrecoil.y = (A1*C2-A2*C1)/(A1*B2-A2*B1);
-    
-    //NSLog(@"\nx: %f   y: %f\n    width: %f", pointOfrecoil.x, pointOfrecoil.y, self.frame.size.width);
     SKAction* recoliCannon = [SKAction moveTo:pointOfrecoil duration:0.3];
-    SKAction* moveCannonBackInPlace = [SKAction moveTo:CGPointMake(cannonPivotPoint.x, cannonPivotPoint.y) duration:0.3];
+    SKAction* moveCannonBackInPlace = [SKAction moveTo:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y) duration:0.3];
 
-    [cannonSpriteNode runAction:[SKAction sequence:@[recoliCannon,moveCannonBackInPlace]]];
-                                 
-
+    [_cannonSpriteNode runAction:[SKAction sequence:@[recoliCannon,moveCannonBackInPlace]]];
+    
+    }
 }
 
 
