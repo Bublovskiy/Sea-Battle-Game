@@ -9,14 +9,11 @@
 #import "GameScene.h"
 #import "Geometry_Calculations.h"
 
-
-
 @implementation GameScene
 
 //Bit Mask Category
 static const int _ship = 1 << 0;
 static const int _shell = 1 << 1;
-//static const int _midLine = 1 << 2;
 
 SKColor* _mainScreenColor;
 SKSpriteNode* _cannonSpriteNode;
@@ -33,7 +30,7 @@ CGFloat _boomScale = 2;
 
 CGFloat _cannonPositionShift;
 CGFloat _angelOfCannon;
-CGFloat _minYToReact;
+CGFloat _minYToReactToClick;
 
 //pivoting point for the cannon
 CGPoint _cannonPivotPoint;
@@ -79,7 +76,7 @@ unsigned int _cannonReloadTime = 3;
     _cannonPivotPoint.x = CGRectGetMidX(self.frame);
     _cannonPositionShift = _cannonSpriteNode.size.height/3;
     _cannonPivotPoint.y = CGRectGetMinY(self.frame) + _cannonPositionShift;
-    _minYToReact = _cannonPivotPoint.y + _cannonSpriteNode.size.height;
+    _minYToReactToClick = _cannonPivotPoint.y + _cannonSpriteNode.size.height;
     
     _cannonSpriteNode.position = _cannonPivotPoint;
     [self addChild:_cannonSpriteNode];
@@ -109,7 +106,7 @@ unsigned int _cannonReloadTime = 3;
 
 - (void)touchMovedToPoint:(CGPoint)pos {
     
-    if (pos.y>=_minYToReact) {
+    if (pos.y>=_minYToReactToClick) {
         
     _angelOfCannon = [Geometry_Calculations findAngelToRotateCannonForPointOfTouch:pos andCannonPosition:_cannonPivotPoint withCannonShift:_cannonPositionShift];
         
@@ -123,7 +120,7 @@ unsigned int _cannonReloadTime = 3;
 
 - (void)touchUpAtPoint:(CGPoint)pos {
     
-    if ((pos.y>=_minYToReact)&&((time(NULL) - _currentTime)>=_cannonReloadTime)) {
+    if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=_cannonReloadTime)) {
     
     _currentTime = (unsigned int)time(NULL);
     
@@ -172,8 +169,8 @@ unsigned int _cannonReloadTime = 3;
     [_nShip setScale:_shipScale];
     
     //set range of Y coordinate to choose from
-    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - _shipTexture.size.height) + fabs(_minYToReact);
-    CGFloat y = (arc4random() % (NSInteger)(rangeMaxY)) - fabs(_minYToReact);
+    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - _shipTexture.size.height) + fabs(_minYToReactToClick);
+    CGFloat y = (arc4random() % (NSInteger)(rangeMaxY)) - fabs(_minYToReactToClick);
     
     _nShip.position = CGPointMake(self.frame.size.width, y);
     _nShip.zPosition = 100;
