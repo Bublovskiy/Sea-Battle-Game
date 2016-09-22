@@ -8,9 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import <SpriteKit/SpriteKit.h>
+#import <math.h>
 
 @interface Geometry_Calculations : NSObject
 
-+ (CGPoint) findCrossPointLine1Point1:(CGPoint) line1point1 nLine1Point2:(CGPoint) line1point2 nLine2Point2:(CGPoint) line2point1 nLine2Point2:(CGPoint) line2point2;
+
++ (CGPoint) findCrossPointLine1Point1:(CGPoint) line1point1 nLine1Point2:(CGPoint) line1point2 nLine2Point1:(CGPoint) line2point1 nLine2Point2:(CGPoint) line2point2;
+
++ (CGFloat) findAngelToRotateCannonForPointOfTouch: (CGPoint)point andCannonPosition:(CGPoint)cannonPivotPoint withCannonShift:(double)cannonPositionShift ;
 
 @end

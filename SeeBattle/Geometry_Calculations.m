@@ -11,7 +11,7 @@
 @implementation Geometry_Calculations
 
 
-+ (CGPoint) findCrossPointLine1Point1:(CGPoint) line1point1 nLine1Point2:(CGPoint) line1point2 nLine2Point2:(CGPoint) line2point1 nLine2Point2:(CGPoint) line2point2 {
++ (CGPoint) findCrossPointLine1Point1:(CGPoint) line1point1 nLine1Point2:(CGPoint) line1point2 nLine2Point1:(CGPoint) line2point1 nLine2Point2:(CGPoint) line2point2 {
 
     CGPoint crossPoint;
     
@@ -43,6 +43,19 @@
     crossPoint.y = (_A1*_C2-_A2*_C1)/(_A1*_B2-_A2*_B1);
     
     return crossPoint;
+}
+
+
++ (CGFloat)  findAngelToRotateCannonForPointOfTouch: (CGPoint)point andCannonPosition:(CGPoint)cannonPivotPoint withCannonShift:(double)cannonPositionShift {
+
+    //slope for the line of touch
+    //original cannonPivotPoint.y seats above the screen baseline by 1/3 of the ship's size
+    double _slope = (point.y - (cannonPivotPoint.y- cannonPositionShift))/(point.x - cannonPivotPoint.x);
+    
+    //calculete and angle of inclination in Rad
+    //1 Rad = 57.2958 degrees
+    return atan(_slope) < 0 ? 90/57.2958 - fabs(atan(_slope)) : -(90/57.2958 - fabs(atan(_slope)));
+
 }
 
 

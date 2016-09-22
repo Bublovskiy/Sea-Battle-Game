@@ -17,9 +17,6 @@
 		D834DCDD1D92D71F00F99AAE /* SeeBattleTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D834DCDC1D92D71F00F99AAE /* SeeBattleTests.m */; };
 		D834DD581D9311D500F99AAE /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = D834DD571D9311D500F99AAE /* Actions.sks */; };
 		D834DD5A1D9311E000F99AAE /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = D834DD591D9311DF00F99AAE /* GameScene.sks */; };
-		D834DD5C1D93128700F99AAE /* ship1.png in Resources */ = {isa = PBXBuildFile; fileRef = D834DD5B1D93128700F99AAE /* ship1.png */; };
-		D834DD5E1D93128C00F99AAE /* shell.png in Resources */ = {isa = PBXBuildFile; fileRef = D834DD5D1D93128C00F99AAE /* shell.png */; };
-		D834DD601D93129100F99AAE /* cannon.png in Resources */ = {isa = PBXBuildFile; fileRef = D834DD5F1D93129100F99AAE /* cannon.png */; };
 		D834DD631D934C7800F99AAE /* Geometry_Calculations.m in Sources */ = {isa = PBXBuildFile; fileRef = D834DD621D934C7800F99AAE /* Geometry_Calculations.m */; };
 /* End PBXBuildFile section */
 
@@ -51,9 +48,6 @@
 		D834DCDE1D92D71F00F99AAE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D834DD571D9311D500F99AAE /* Actions.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; name = Actions.sks; path = ../../GameExample/GameExample/GameExample/Actions.sks; sourceTree = "<group>"; };
 		D834DD591D9311DF00F99AAE /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; name = GameScene.sks; path = ../../GameExample/GameExample/GameExample/GameScene.sks; sourceTree = "<group>"; };
-		D834DD5B1D93128700F99AAE /* ship1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = ship1.png; path = ../../../../../Desktop/ship1.png; sourceTree = "<group>"; };
-		D834DD5D1D93128C00F99AAE /* shell.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = shell.png; path = ../../../../../Desktop/shell.png; sourceTree = "<group>"; };
-		D834DD5F1D93129100F99AAE /* cannon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = cannon.png; path = ../../../../../Desktop/cannon.png; sourceTree = "<group>"; };
 		D834DD611D934C7800F99AAE /* Geometry_Calculations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry_Calculations.h; sourceTree = "<group>"; };
 		D834DD621D934C7800F99AAE /* Geometry_Calculations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Geometry_Calculations.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -97,9 +91,6 @@
 		D834DCBA1D92D71F00F99AAE /* SeeBattle */ = {
 			isa = PBXGroup;
 			children = (
-				D834DD5B1D93128700F99AAE /* ship1.png */,
-				D834DD5D1D93128C00F99AAE /* shell.png */,
-				D834DD5F1D93129100F99AAE /* cannon.png */,
 				D834DCBE1D92D71F00F99AAE /* AppDelegate.h */,
 				D834DCBF1D92D71F00F99AAE /* AppDelegate.m */,
 				D834DD591D9311DF00F99AAE /* GameScene.sks */,
@@ -219,10 +210,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D834DCCD1D92D71F00F99AAE /* Main.storyboard in Resources */,
-				D834DD5C1D93128700F99AAE /* ship1.png in Resources */,
-				D834DD601D93129100F99AAE /* cannon.png in Resources */,
 				D834DD5A1D9311E000F99AAE /* GameScene.sks in Resources */,
-				D834DD5E1D93128C00F99AAE /* shell.png in Resources */,
 				D834DCCF1D92D71F00F99AAE /* Assets.xcassets in Resources */,
 				D834DCD21D92D71F00F99AAE /* LaunchScreen.storyboard in Resources */,
 				D834DD581D9311D500F99AAE /* Actions.sks in Resources */,

@@ -7,6 +7,7 @@
 //
 
 #import <SpriteKit/SpriteKit.h>
+#include <time.h>
 
 @interface GameScene : SKScene <SKPhysicsContactDelegate>
 
