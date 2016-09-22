@@ -6,6 +6,8 @@
 //  Copyright © 2016 Maxim Bublovskiy. All rights reserved.
 //
 
+
+
 #import "GameScene.h"
 #import "Geometry_Calculations.h"
 
@@ -18,15 +20,12 @@ static const int _shell = 1 << 1;
 SKColor* _mainScreenColor;
 SKSpriteNode* _cannonSpriteNode;
 SKNode* _midLineNode;
+SKLabelNode* _looseScoreNode;
+SKLabelNode* _winScoreNode;
 
 SKTexture* _shellTexture;
-SKTexture* _shipTexture;
 SKTexture* _boomTexture;
-
-CGFloat _cannonScale = 0.8;
-CGFloat _shellScale = 1.5;
-CGFloat _shipScale = 1.5;
-CGFloat _boomScale = 2;
+NSArray* _shipsTextures;
 
 CGFloat _cannonPositionShift;
 CGFloat _angelOfCannon;
@@ -34,20 +33,12 @@ CGFloat _minYToReactToClick;
 
 //pivoting point for the cannon
 CGPoint _cannonPivotPoint;
-CGPoint _contactPoint;
-
-//time intervals
-NSTimeInterval _shipSpeed = 15;
-NSTimeInterval _shellSpeed = 8;
-NSTimeInterval _cannonRecoilSpeed = 0.3;
-NSTimeInterval _boomScaleSpeed = 0.5;
-NSTimeInterval _shipAppearanceDeley = 7;
-NSTimeInterval _cannonTurningSpeed = 0.1;
 
 unsigned int _currentTime = 0;
-unsigned int _cannonReloadTime = 3;
+unsigned int _loosScore = 1;
+unsigned int _winScore = 0;
 
-
+BOOL _isGameLost = NO;
 
 - (void)didMoveToView:(SKView *)view {
     
@@ -57,20 +48,13 @@ unsigned int _cannonReloadTime = 3;
     _mainScreenColor = [SKColor colorWithRed:0.2 green:0.8 blue:1 alpha:1];
     [self setBackgroundColor:_mainScreenColor];
     
-//    //set mid line node
-//    _midLineNode  = [SKNode node];
-//    _midLineNode.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:CGSizeMake(self.frame.size.width, 10)];
-//    _midLineNode.physicsBody.affectedByGravity = NO;
-//    _midLineNode.physicsBody.categoryBitMask = _midLine;
-//    _midLineNode.physicsBody.contactTestBitMask = _shell;
-    
     //set the Cannon
     
     SKTexture* _cannonTexture = [SKTexture textureWithImageNamed:@"Cannon"];
     
     _cannonSpriteNode = [SKSpriteNode spriteNodeWithTexture:_cannonTexture];
     _cannonSpriteNode.zPosition = 100;
-    [_cannonSpriteNode setScale: _cannonScale];
+    [_cannonSpriteNode setScale: CANNON_SCALE];
     
     //create a pivot point for the cannon on the screen
     _cannonPivotPoint.x = CGRectGetMidX(self.frame);
@@ -87,9 +71,10 @@ unsigned int _cannonReloadTime = 3;
     
     //set ships
     
-    _shipTexture = [SKTexture textureWithImageNamed:@"Ship1"];
+    _shipsTextures = [NSArray arrayWithObjects:[SKTexture textureWithImageNamed:@"Ship1"],[SKTexture textureWithImageNamed:@"Ship2"],nil];
+    
     SKAction* _generateShip = [SKAction performSelector:@selector(spawnShip) onTarget:self];
-    SKAction* _shipdelay = [SKAction waitForDuration:_shipAppearanceDeley];
+    SKAction* _shipdelay = [SKAction waitForDuration:SHIP_AAPEARANCE_DELEY];
     SKAction* _shipSequebce = [SKAction sequence:@[_generateShip,_shipdelay]];
     SKAction* _generateShipsForever = [SKAction repeatActionForever:_shipSequebce];
     [self runAction:_generateShipsForever];
@@ -97,21 +82,44 @@ unsigned int _cannonReloadTime = 3;
     //set boom
     _boomTexture = [SKTexture textureWithImageNamed:@"Boom"];
     
- }
+    //set score counters
+    
+    _looseScoreNode = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_looseScoreNode setText:[NSString stringWithFormat:@"%d",_loosScore]];
+    _looseScoreNode.zPosition = 100;
+    [_looseScoreNode setScale:SCORE_SCALE];
+    _looseScoreNode.position = CGPointMake(CGRectGetMinX(self.frame)/2, _cannonPivotPoint.y);
+    [self addChild:_looseScoreNode];
+    
+    _winScoreNode = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_winScoreNode setText:[NSString stringWithFormat:@"%d",_winScore]];
+    _winScoreNode.zPosition = 100;
+    [_winScoreNode setScale:SCORE_SCALE];
+    _winScoreNode.position = CGPointMake(CGRectGetMaxX(self.frame)/2, _cannonPivotPoint.y);
+    [self addChild:_winScoreNode];
+    
+
+}
 
 
 - (void)touchDownAtPoint:(CGPoint)pos {
- 
+    
+    if (_isGameLost) {
+    
+        [self restartGame];
+        
+    }
+    
 }
 
 - (void)touchMovedToPoint:(CGPoint)pos {
     
-    if (pos.y>=_minYToReactToClick) {
+    if ((pos.y>=_minYToReactToClick)&&!_isGameLost) {
         
     _angelOfCannon = [Geometry_Calculations findAngelToRotateCannonForPointOfTouch:pos andCannonPosition:_cannonPivotPoint withCannonShift:_cannonPositionShift];
         
     //turn the cannon
-    SKAction* cannotTurningAction = [SKAction rotateToAngle:_angelOfCannon duration:_cannonTurningSpeed];
+    SKAction* cannotTurningAction = [SKAction rotateToAngle:_angelOfCannon duration:CANNON_TURNING_SPEED];
 
     [_cannonSpriteNode runAction:cannotTurningAction];
     
@@ -120,7 +128,8 @@ unsigned int _cannonReloadTime = 3;
 
 - (void)touchUpAtPoint:(CGPoint)pos {
     
-    if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=_cannonReloadTime)) {
+    
+    if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=CANNON_RELOAD_TIME)&&!_isGameLost) {
     
     _currentTime = (unsigned int)time(NULL);
     
@@ -131,7 +140,7 @@ unsigned int _cannonReloadTime = 3;
                                         nLine2Point1: CGPointMake(CGRectGetMinX(self.frame), CGRectGetMaxY(self.frame))nLine2Point2: CGPointMake(CGRectGetMaxX(self.frame), CGRectGetMaxY(self.frame))];
         
     SKSpriteNode* _shellSpriteNode = [SKSpriteNode spriteNodeWithTexture:_shellTexture];
-    [_shellSpriteNode setScale:_shellScale];
+    [_shellSpriteNode setScale:SHELL_SCALE];
     _shellSpriteNode.position = _cannonPivotPoint;
     _shellSpriteNode.zRotation = _angelOfCannon;
     _shellSpriteNode.zPosition = 80;
@@ -143,7 +152,7 @@ unsigned int _cannonReloadTime = 3;
     _shellSpriteNode.physicsBody.contactTestBitMask = _ship;
 
     
-    SKAction* _moveShell = [SKAction moveTo:_pointBeyondScreen duration:_shellSpeed];
+    SKAction* _moveShell = [SKAction moveTo:_pointBeyondScreen duration:SHELL_SPEED];
     SKAction* _deleteShell = [SKAction removeFromParent];
         
     [self addChild:_shellSpriteNode];
@@ -154,8 +163,8 @@ unsigned int _cannonReloadTime = 3;
     
     CGPoint pointOfrecoil = [Geometry_Calculations findCrossPointLine1Point1:pos nLine1Point2:_cannonPivotPoint nLine2Point1:CGPointMake(CGRectGetMinX(self.frame), _cannonPivotPoint.y-_cannonPositionShift) nLine2Point2:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y-_cannonPositionShift)];
     
-    SKAction* _recoilCannon = [SKAction moveTo:pointOfrecoil duration:_cannonRecoilSpeed];
-    SKAction* _moveCannonBackInPlace = [SKAction moveTo:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y) duration:_cannonRecoilSpeed];
+    SKAction* _recoilCannon = [SKAction moveTo:pointOfrecoil duration:CANNON_RECOIL_SPEED];
+    SKAction* _moveCannonBackInPlace = [SKAction moveTo:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y) duration:CANNON_RECOIL_SPEED];
 
     [_cannonSpriteNode runAction:[SKAction sequence:@[_recoilCannon,_moveCannonBackInPlace]]];
     
@@ -165,11 +174,11 @@ unsigned int _cannonReloadTime = 3;
 
 - (void)spawnShip {
     
-    SKSpriteNode* _nShip = [SKSpriteNode spriteNodeWithTexture:_shipTexture];
-    [_nShip setScale:_shipScale];
+    SKSpriteNode* _nShip = [SKSpriteNode spriteNodeWithTexture:_shipsTextures[arc4random() % 2]];
+    [_nShip setScale:SHIP_SCALE];
     
     //set range of Y coordinate to choose from
-    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - _shipTexture.size.height) + fabs(_minYToReactToClick);
+    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - _nShip.size.height) + fabs(_minYToReactToClick);
     CGFloat y = (arc4random() % (NSInteger)(rangeMaxY)) - fabs(_minYToReactToClick);
     
     _nShip.position = CGPointMake(self.frame.size.width, y);
@@ -181,13 +190,82 @@ unsigned int _cannonReloadTime = 3;
     _nShip.physicsBody.categoryBitMask = _ship;
    
     
-    SKAction* _moveShip = [SKAction moveTo:CGPointMake(CGRectGetMinX(self.frame)-_shipTexture.size.width/2, y) duration:_shipSpeed];
+    SKAction* _moveShip = [SKAction moveTo:CGPointMake(CGRectGetMinX(self.frame)-_nShip.size.width/2, y) duration: SHIP_SPEED];
     SKAction* _deleteShip = [SKAction removeFromParent];
     [self addChild:_nShip];
     
-    [_nShip runAction: [SKAction sequence:@[_moveShip,_deleteShip]]];
+    [_nShip runAction: [SKAction sequence:@[_moveShip,_deleteShip]] completion:^{
+    
+        //updare score
+        
+        _loosScore-=1;
+        [self animateAndChangeScore:_looseScoreNode to:_loosScore];
+        
+        //stop the game if needed
+        
+        if (_loosScore == 0) {
+            [self stopGame];
+        }
+    
+        
+    }];
 
+    
 }
+
+
+- (void) animateAndChangeScore:(SKLabelNode*) labelToChange to:(int) newScore {
+
+    [labelToChange setText:[NSString stringWithFormat:@"%d",newScore]];
+    [labelToChange runAction:[SKAction sequence:@[[SKAction fadeOutWithDuration:SCORE_TEXT_UPDATE_SPEED],[SKAction fadeInWithDuration:SCORE_TEXT_UPDATE_SPEED]]]];
+   
+}
+
+
+- (void) stopGame {
+    
+     _isGameLost = YES;
+    
+    //clear display
+    
+    [self removeAllChildren];
+    
+    //show Game Over Sign
+    
+    SKLabelNode* _gameOverText = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_gameOverText setText:GAME_OVER_MESSAGE];
+    [_gameOverText setScale:GAME_OVER_MESSAGE_SCALE];
+    _gameOverText.position = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame));
+    [self addChild:_gameOverText];
+    
+}
+
+
+- (void) restartGame {
+
+    //clear dispalay
+    
+    [self removeAllChildren];
+
+    //reset scores
+    
+    _loosScore = LOOSE_SHIPS_LIMIT;
+    _winScore = 0;
+    
+    //restart all nodes
+    [self addChild:_cannonSpriteNode];
+    [self addChild:_looseScoreNode];
+    [self addChild:_winScoreNode];
+    
+    //put new values in scores signs
+    
+    [self animateAndChangeScore:_looseScoreNode to:_loosScore];
+    [self animateAndChangeScore:_winScoreNode to:_winScore];
+    
+    _isGameLost = NO;
+    
+}
+
 
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
@@ -206,16 +284,14 @@ unsigned int _cannonReloadTime = 3;
 
 
 - (void)didBeginContact:(SKPhysicsContact *)contact {
-    _contactPoint = contact.contactPoint;
     
-   
     //boom effect
     SKSpriteNode* _boom = [SKSpriteNode spriteNodeWithTexture:_boomTexture];
-    _boom.position = _contactPoint;
+    _boom.position = contact.contactPoint;
     [_boom setScale:0.1];
     
     [self addChild:_boom];
-    [_boom runAction: [SKAction sequence:@[[SKAction scaleTo:_boomScale duration:_boomScaleSpeed],[SKAction removeFromParent]]]];
+    [_boom runAction: [SKAction sequence:@[[SKAction scaleTo:BOOM_SCALE duration:BOOM_SCALING_SPEED],[SKAction removeFromParent]]]];
     
     if (contact.bodyA.categoryBitMask == _shell) {
       [contact.bodyA.node setHidden:YES];
@@ -223,6 +299,11 @@ unsigned int _cannonReloadTime = 3;
     else {
       [contact.bodyB.node setHidden:YES];
     }
+    
+    //updare score
+    
+    _winScore +=1;
+    [self animateAndChangeScore:_winScoreNode to:_winScore];
     
 }
 

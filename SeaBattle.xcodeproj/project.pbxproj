@@ -18,6 +18,7 @@
 		D834DD581D9311D500F99AAE /* Actions.sks in Resources */ = {isa = PBXBuildFile; fileRef = D834DD571D9311D500F99AAE /* Actions.sks */; };
 		D834DD5A1D9311E000F99AAE /* GameScene.sks in Resources */ = {isa = PBXBuildFile; fileRef = D834DD591D9311DF00F99AAE /* GameScene.sks */; };
 		D834DD631D934C7800F99AAE /* Geometry_Calculations.m in Sources */ = {isa = PBXBuildFile; fileRef = D834DD621D934C7800F99AAE /* Geometry_Calculations.m */; };
+		D86BB5DC1D94956C00DD013A /* Settings.m in Sources */ = {isa = PBXBuildFile; fileRef = D86BB5DB1D94956C00DD013A /* Settings.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +51,8 @@
 		D834DD591D9311DF00F99AAE /* GameScene.sks */ = {isa = PBXFileReference; lastKnownFileType = file.sks; name = GameScene.sks; path = ../../GameExample/GameExample/GameExample/GameScene.sks; sourceTree = "<group>"; };
 		D834DD611D934C7800F99AAE /* Geometry_Calculations.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Geometry_Calculations.h; sourceTree = "<group>"; };
 		D834DD621D934C7800F99AAE /* Geometry_Calculations.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Geometry_Calculations.m; sourceTree = "<group>"; };
+		D86BB5DA1D94956C00DD013A /* Settings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Settings.h; sourceTree = "<group>"; };
+		D86BB5DB1D94956C00DD013A /* Settings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Settings.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +109,8 @@
 				D834DCBB1D92D71F00F99AAE /* Supporting Files */,
 				D834DD611D934C7800F99AAE /* Geometry_Calculations.h */,
 				D834DD621D934C7800F99AAE /* Geometry_Calculations.m */,
+				D86BB5DA1D94956C00DD013A /* Settings.h */,
+				D86BB5DB1D94956C00DD013A /* Settings.m */,
 			);
 			path = SeeBattle;
 			sourceTree = "<group>";
@@ -233,6 +238,7 @@
 			files = (
 				D834DCCA1D92D71F00F99AAE /* GameViewController.m in Sources */,
 				D834DD631D934C7800F99AAE /* Geometry_Calculations.m in Sources */,
+				D86BB5DC1D94956C00DD013A /* Settings.m in Sources */,
 				D834DCC01D92D71F00F99AAE /* AppDelegate.m in Sources */,
 				D834DCC71D92D71F00F99AAE /* GameScene.m in Sources */,
 				D834DCBD1D92D71F00F99AAE /* main.m in Sources */,
