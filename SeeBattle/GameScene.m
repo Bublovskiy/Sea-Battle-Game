@@ -6,8 +6,6 @@
 //  Copyright © 2016 Maxim Bublovskiy. All rights reserved.
 //
 
-
-
 #import "GameScene.h"
 #import "Geometry_Calculations.h"
 
@@ -19,6 +17,12 @@ static const int _shell = 1 << 1;
 
 SKColor* _mainScreenColor;
 SKSpriteNode* _cannonSpriteNode;
+SKNode* _laserPointNode;
+SKShapeNode* _laserPointShapeNode;
+UITapGestureRecognizer* _doubleTap;
+SKSpriteNode* _backgroundView;
+SKLabelNode* _gameOverText;
+
 SKNode* _midLineNode;
 SKLabelNode* _looseScoreNode;
 SKLabelNode* _winScoreNode;
@@ -35,19 +39,23 @@ CGFloat _minYToReactToClick;
 CGPoint _cannonPivotPoint;
 
 unsigned int _currentTime = 0;
-unsigned int _loosScore = 1;
+unsigned int _loosScore = 3;
 unsigned int _winScore = 0;
 
 BOOL _isGameLost = NO;
+BOOL _isLaserPointOn = YES;
 
 - (void)didMoveToView:(SKView *)view {
     
     //set main screen color
     self.physicsWorld.contactDelegate = self;
     
-    _mainScreenColor = [SKColor colorWithRed:0.2 green:0.8 blue:1 alpha:1];
-    [self setBackgroundColor:_mainScreenColor];
+    _backgroundView =[SKSpriteNode spriteNodeWithImageNamed:@"Ocean"];
+    [_backgroundView setSize:self.size];                                    //scale to math the current screen size
+    [_backgroundView setZPosition:-1];                                      //place it behind everything
     
+    [self addChild:_backgroundView];
+   
     //set the Cannon
     
     SKTexture* _cannonTexture = [SKTexture textureWithImageNamed:@"Cannon"];
@@ -85,6 +93,7 @@ BOOL _isGameLost = NO;
     //set score counters
     
     _looseScoreNode = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_looseScoreNode setFontColor:[UIColor purpleColor]];
     [_looseScoreNode setText:[NSString stringWithFormat:@"%d",_loosScore]];
     _looseScoreNode.zPosition = 100;
     [_looseScoreNode setScale:SCORE_SCALE];
@@ -92,13 +101,31 @@ BOOL _isGameLost = NO;
     [self addChild:_looseScoreNode];
     
     _winScoreNode = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_winScoreNode setFontColor:[UIColor purpleColor]];
     [_winScoreNode setText:[NSString stringWithFormat:@"%d",_winScore]];
     _winScoreNode.zPosition = 100;
     [_winScoreNode setScale:SCORE_SCALE];
     _winScoreNode.position = CGPointMake(CGRectGetMaxX(self.frame)/2, _cannonPivotPoint.y);
     [self addChild:_winScoreNode];
     
+    //set laser point
+    
+    [self turnOnLaserPoint:_isLaserPointOn];
 
+    //set double tap
+    
+    _doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap)];
+    _doubleTap.numberOfTapsRequired = 2;
+    
+    [self.view addGestureRecognizer:_doubleTap];
+    
+    //set game over node
+    
+    _gameOverText = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
+    [_gameOverText setText:GAME_OVER_MESSAGE];
+    [_gameOverText setScale:GAME_OVER_MESSAGE_SCALE];
+    _gameOverText.position = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame));
+    
 }
 
 
@@ -119,19 +146,27 @@ BOOL _isGameLost = NO;
     _angelOfCannon = [Geometry_Calculations findAngelToRotateCannonForPointOfTouch:pos andCannonPosition:_cannonPivotPoint withCannonShift:_cannonPositionShift];
         
     //turn the cannon
+    
     SKAction* cannotTurningAction = [SKAction rotateToAngle:_angelOfCannon duration:CANNON_TURNING_SPEED];
 
     [_cannonSpriteNode runAction:cannotTurningAction];
+    
+    if (_isLaserPointOn) {
+        [_laserPointNode runAction:cannotTurningAction];
+    }
+       
     
     }
 }
 
 - (void)touchUpAtPoint:(CGPoint)pos {
     
+    //firing possible every CANNON_RELOAD_TIME sec
     
     if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=CANNON_RELOAD_TIME)&&!_isGameLost) {
     
-    _currentTime = (unsigned int)time(NULL);
+    
+    _currentTime = (unsigned int)time(NULL);                //update current time counter
     
     //fire a shell
     CGPoint _pointBeyondScreen = [Geometry_Calculations
@@ -207,10 +242,8 @@ BOOL _isGameLost = NO;
             [self stopGame];
         }
     
-        
     }];
 
-    
 }
 
 
@@ -226,36 +259,30 @@ BOOL _isGameLost = NO;
     
      _isGameLost = YES;
     
-    //clear display
+    //hide score
     
-    [self removeAllChildren];
+    [_looseScoreNode setHidden:YES];
     
     //show Game Over Sign
     
-    SKLabelNode* _gameOverText = [SKLabelNode labelNodeWithFontNamed:@"DIN Alternate"];
-    [_gameOverText setText:GAME_OVER_MESSAGE];
-    [_gameOverText setScale:GAME_OVER_MESSAGE_SCALE];
-    _gameOverText.position = CGPointMake(CGRectGetMidX(self.frame), CGRectGetMidY(self.frame));
     [self addChild:_gameOverText];
     
 }
 
-
 - (void) restartGame {
 
-    //clear dispalay
+    //remove Game Over Sign
     
-    [self removeAllChildren];
-
+    [_gameOverText removeFromParent];
+    
     //reset scores
     
     _loosScore = LOOSE_SHIPS_LIMIT;
     _winScore = 0;
     
-    //restart all nodes
-    [self addChild:_cannonSpriteNode];
-    [self addChild:_looseScoreNode];
-    [self addChild:_winScoreNode];
+    //show score node
+    
+    [_looseScoreNode setHidden:NO];
     
     //put new values in scores signs
     
@@ -266,10 +293,57 @@ BOOL _isGameLost = NO;
     
 }
 
+- (void) turnOnLaserPoint: (BOOL) key {
+
+    [_laserPointNode setZRotation:_angelOfCannon];    //align the laser with the cannon angel in any case
+    
+    if (![_laserPointNode inParentHierarchy:self]&&key){
+  
+        //check if we created path before
+        
+        if (CGPathIsEmpty(_laserPointShapeNode.path)) {
+            
+        
+        _laserPointShapeNode = [SKShapeNode node];
+        CGMutablePathRef pathToDraw = CGPathCreateMutable();
+        
+        CGPathMoveToPoint(pathToDraw, NULL, _cannonPivotPoint.x,_cannonPivotPoint.y);
+        CGPathAddLineToPoint(pathToDraw, NULL, 0,CGRectGetMaxY(self.frame)*2);
+        
+        _laserPointShapeNode.path = pathToDraw;
+        
+        [_laserPointShapeNode setStrokeColor:[SKColor redColor]];
+        [_laserPointShapeNode setGlowWidth:3];
+        [_laserPointShapeNode setLineWidth:2];
+        
+        _laserPointNode = [SKNode node];
+        [_laserPointNode addChild:_laserPointShapeNode];
+        [_laserPointNode setPosition:_cannonPivotPoint];
+    
+        }
+
+        [self addChild:_laserPointNode];
+    }
+    else {
+        [_laserPointNode setHidden:!key];
+    }
+    
+}
+
+
+- (void) doubleTap{
+
+    _isLaserPointOn = !_isLaserPointOn;
+    [self turnOnLaserPoint:_isLaserPointOn];
+    
+}
 
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event {
-     for (UITouch *t in touches) {[self touchDownAtPoint:[t locationInNode:self]];}
+    
+
+    
+    for (UITouch *t in touches) {[self touchDownAtPoint:[t locationInNode:self]];}
 }
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event{
      for (UITouch *t in touches) {[self touchMovedToPoint:[t locationInNode:self]];}
@@ -308,6 +382,8 @@ BOOL _isGameLost = NO;
 }
 
 - (void)didEndContact:(SKPhysicsContact *)contact {
+    
+    //remove a shell and a boat after the contact
     
     [contact.bodyA.node runAction:[SKAction removeFromParent]];
     [contact.bodyB.node runAction:[SKAction removeFromParent]];

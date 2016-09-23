@@ -29,6 +29,5 @@
 
 #define GAME_OVER_MESSAGE ((NSString*)@"Game Over!")
 
-@interface Settings : NSObject
 
-@end
+
