@@ -19,11 +19,9 @@ SKColor* _mainScreenColor;
 SKSpriteNode* _cannonSpriteNode;
 SKNode* _laserPointNode;
 SKShapeNode* _laserPointShapeNode;
-UITapGestureRecognizer* _doubleTap;
-SKSpriteNode* _backgroundView;
 SKLabelNode* _gameOverText;
 
-SKNode* _midLineNode;
+//SKNode* _midLineNode;
 SKLabelNode* _looseScoreNode;
 SKLabelNode* _winScoreNode;
 
@@ -50,17 +48,17 @@ BOOL _isLaserPointOn = YES;
     //set main screen color
     self.physicsWorld.contactDelegate = self;
     
-    _backgroundView =[SKSpriteNode spriteNodeWithImageNamed:@"Ocean"];
-    [_backgroundView setSize:self.size];                                    //scale to math the current screen size
-    [_backgroundView setZPosition:-1];                                      //place it behind everything
+    SKSpriteNode* backgroundView =[SKSpriteNode spriteNodeWithImageNamed:@"Ocean"];
+    [backgroundView setSize:self.size];                                    //scale to math the current screen size
+    [backgroundView setZPosition:-1];                                      //place it behind everything
     
-    [self addChild:_backgroundView];
+    [self addChild:backgroundView];
    
     //set the Cannon
     
-    SKTexture* _cannonTexture = [SKTexture textureWithImageNamed:@"Cannon"];
+    SKTexture* cannonTexture = [SKTexture textureWithImageNamed:@"Cannon"];
     
-    _cannonSpriteNode = [SKSpriteNode spriteNodeWithTexture:_cannonTexture];
+    _cannonSpriteNode = [SKSpriteNode spriteNodeWithTexture:cannonTexture];
     _cannonSpriteNode.zPosition = 100;
     [_cannonSpriteNode setScale: CANNON_SCALE];
     
@@ -81,11 +79,11 @@ BOOL _isLaserPointOn = YES;
     
     _shipsTextures = [NSArray arrayWithObjects:[SKTexture textureWithImageNamed:@"Ship1"],[SKTexture textureWithImageNamed:@"Ship2"],nil];
     
-    SKAction* _generateShip = [SKAction performSelector:@selector(spawnShip) onTarget:self];
-    SKAction* _shipdelay = [SKAction waitForDuration:SHIP_AAPEARANCE_DELEY];
-    SKAction* _shipSequebce = [SKAction sequence:@[_generateShip,_shipdelay]];
-    SKAction* _generateShipsForever = [SKAction repeatActionForever:_shipSequebce];
-    [self runAction:_generateShipsForever];
+    SKAction* generateShip = [SKAction performSelector:@selector(spawnShip) onTarget:self];
+    SKAction* shipdelay = [SKAction waitForDuration:SHIP_AAPEARANCE_DELEY];
+    SKAction* shipSequebce = [SKAction sequence:@[generateShip,shipdelay]];
+    SKAction* generateShipsForever = [SKAction repeatActionForever:shipSequebce];
+    [self runAction:generateShipsForever];
     
     //set boom
     _boomTexture = [SKTexture textureWithImageNamed:@"Boom"];
@@ -114,10 +112,10 @@ BOOL _isLaserPointOn = YES;
 
     //set double tap
     
-    _doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTap)];
-    _doubleTap.numberOfTapsRequired = 2;
+    UITapGestureRecognizer* doubleTap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(doubleTapAction)];
+    doubleTap.numberOfTapsRequired = 2;
     
-    [self.view addGestureRecognizer:_doubleTap];
+    [self.view addGestureRecognizer:doubleTap];
     
     //set game over node
     
@@ -169,39 +167,39 @@ BOOL _isLaserPointOn = YES;
     _currentTime = (unsigned int)time(NULL);                //update current time counter
     
     //fire a shell
-    CGPoint _pointBeyondScreen = [Geometry_Calculations
+    CGPoint pointBeyondScreen = [Geometry_Calculations
                                         findCrossPointLine1Point1: _cannonPivotPoint
                                         nLine1Point2: pos
                                         nLine2Point1: CGPointMake(CGRectGetMinX(self.frame), CGRectGetMaxY(self.frame))nLine2Point2: CGPointMake(CGRectGetMaxX(self.frame), CGRectGetMaxY(self.frame))];
         
-    SKSpriteNode* _shellSpriteNode = [SKSpriteNode spriteNodeWithTexture:_shellTexture];
-    [_shellSpriteNode setScale:SHELL_SCALE];
-    _shellSpriteNode.position = _cannonPivotPoint;
-    _shellSpriteNode.zRotation = _angelOfCannon;
-    _shellSpriteNode.zPosition = 80;
+    SKSpriteNode* shellSpriteNode = [SKSpriteNode spriteNodeWithTexture:_shellTexture];
+    [shellSpriteNode setScale:SHELL_SCALE];
+    shellSpriteNode.position = _cannonPivotPoint;
+    shellSpriteNode.zRotation = _angelOfCannon;
+    shellSpriteNode.zPosition = 80;
     
-    _shellSpriteNode.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:_shellSpriteNode.size];
-    _shellSpriteNode.physicsBody.affectedByGravity = NO;
-    _shellSpriteNode.physicsBody.dynamic = YES;
-    _shellSpriteNode.physicsBody.categoryBitMask = _shell;
-    _shellSpriteNode.physicsBody.contactTestBitMask = _ship;
+    shellSpriteNode.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:shellSpriteNode.size];
+    shellSpriteNode.physicsBody.affectedByGravity = NO;
+    shellSpriteNode.physicsBody.dynamic = YES;
+    shellSpriteNode.physicsBody.categoryBitMask = _shell;
+    shellSpriteNode.physicsBody.contactTestBitMask = _ship;
 
     
-    SKAction* _moveShell = [SKAction moveTo:_pointBeyondScreen duration:SHELL_SPEED];
-    SKAction* _deleteShell = [SKAction removeFromParent];
+    SKAction* moveShell = [SKAction moveTo:pointBeyondScreen duration:SHELL_SPEED];
+    SKAction* deleteShell = [SKAction removeFromParent];
         
-    [self addChild:_shellSpriteNode];
-    [_shellSpriteNode runAction:[SKAction sequence:@[_moveShell,_deleteShell]]];
+    [self addChild:shellSpriteNode];
+    [shellSpriteNode runAction:[SKAction sequence:@[moveShell,deleteShell]]];
         
         
     //recoil the cannon
     
     CGPoint pointOfrecoil = [Geometry_Calculations findCrossPointLine1Point1:pos nLine1Point2:_cannonPivotPoint nLine2Point1:CGPointMake(CGRectGetMinX(self.frame), _cannonPivotPoint.y-_cannonPositionShift) nLine2Point2:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y-_cannonPositionShift)];
     
-    SKAction* _recoilCannon = [SKAction moveTo:pointOfrecoil duration:CANNON_RECOIL_SPEED];
-    SKAction* _moveCannonBackInPlace = [SKAction moveTo:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y) duration:CANNON_RECOIL_SPEED];
+    SKAction* recoilCannon = [SKAction moveTo:pointOfrecoil duration:CANNON_RECOIL_SPEED];
+    SKAction* moveCannonBackInPlace = [SKAction moveTo:CGPointMake(_cannonPivotPoint.x, _cannonPivotPoint.y) duration:CANNON_RECOIL_SPEED];
 
-    [_cannonSpriteNode runAction:[SKAction sequence:@[_recoilCannon,_moveCannonBackInPlace]]];
+    [_cannonSpriteNode runAction:[SKAction sequence:@[recoilCannon,moveCannonBackInPlace]]];
     
     }
 }
@@ -209,27 +207,27 @@ BOOL _isLaserPointOn = YES;
 
 - (void)spawnShip {
     
-    SKSpriteNode* _nShip = [SKSpriteNode spriteNodeWithTexture:_shipsTextures[arc4random() % 2]];
-    [_nShip setScale:SHIP_SCALE];
+    SKSpriteNode* nShip = [SKSpriteNode spriteNodeWithTexture:_shipsTextures[arc4random() % 2]];
+    [nShip setScale:SHIP_SCALE];
     
     //set range of Y coordinate to choose from
-    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - _nShip.size.height) + fabs(_minYToReactToClick);
+    CGFloat rangeMaxY = (CGRectGetMaxY(self.frame) - nShip.size.height) + fabs(_minYToReactToClick);
     CGFloat y = (arc4random() % (NSInteger)(rangeMaxY)) - fabs(_minYToReactToClick);
     
-    _nShip.position = CGPointMake(self.frame.size.width, y);
-    _nShip.zPosition = 100;
+    nShip.position = CGPointMake(self.frame.size.width, y);
+    nShip.zPosition = 100;
     
-    _nShip.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:_nShip.size];
-    _nShip.physicsBody.affectedByGravity = NO;
-    _nShip.physicsBody.dynamic = YES;
-    _nShip.physicsBody.categoryBitMask = _ship;
+    nShip.physicsBody = [SKPhysicsBody bodyWithRectangleOfSize:nShip.size];
+    nShip.physicsBody.affectedByGravity = NO;
+    nShip.physicsBody.dynamic = YES;
+    nShip.physicsBody.categoryBitMask = _ship;
    
     
-    SKAction* _moveShip = [SKAction moveTo:CGPointMake(CGRectGetMinX(self.frame)-_nShip.size.width/2, y) duration: SHIP_SPEED];
-    SKAction* _deleteShip = [SKAction removeFromParent];
-    [self addChild:_nShip];
+    SKAction* moveShip = [SKAction moveTo:CGPointMake(CGRectGetMinX(self.frame)-nShip.size.width/2, y) duration: SHIP_SPEED];
+    SKAction* deleteShip = [SKAction removeFromParent];
+    [self addChild:nShip];
     
-    [_nShip runAction: [SKAction sequence:@[_moveShip,_deleteShip]] completion:^{
+    [nShip runAction: [SKAction sequence:@[moveShip,deleteShip]] completion:^{
     
         //updare score
         
@@ -331,7 +329,7 @@ BOOL _isLaserPointOn = YES;
 }
 
 
-- (void) doubleTap{
+- (void) doubleTapAction{
 
     _isLaserPointOn = !_isLaserPointOn;
     [self turnOnLaserPoint:_isLaserPointOn];
@@ -360,12 +358,12 @@ BOOL _isLaserPointOn = YES;
 - (void)didBeginContact:(SKPhysicsContact *)contact {
     
     //boom effect
-    SKSpriteNode* _boom = [SKSpriteNode spriteNodeWithTexture:_boomTexture];
-    _boom.position = contact.contactPoint;
-    [_boom setScale:0.1];
+    SKSpriteNode* boom = [SKSpriteNode spriteNodeWithTexture:_boomTexture];
+    boom.position = contact.contactPoint;
+    [boom setScale:0.1];
     
-    [self addChild:_boom];
-    [_boom runAction: [SKAction sequence:@[[SKAction scaleTo:BOOM_SCALE duration:BOOM_SCALING_SPEED],[SKAction removeFromParent]]]];
+    [self addChild:boom];
+    [boom runAction: [SKAction sequence:@[[SKAction scaleTo:BOOM_SCALE duration:BOOM_SCALING_SPEED],[SKAction removeFromParent]]]];
     
     if (contact.bodyA.categoryBitMask == _shell) {
       [contact.bodyA.node setHidden:YES];

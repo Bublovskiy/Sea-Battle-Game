@@ -21,7 +21,7 @@
     scene.scaleMode = SKSceneScaleModeAspectFill;
     
     SKView *skView = (SKView *)self.view;
-    
+   
     // Present the scene
     [skView presentScene:scene];
     
