@@ -17,7 +17,6 @@ static const int _shell = 1 << 1;
 
 SKColor* _mainScreenColor;
 SKSpriteNode* _cannonSpriteNode;
-SKNode* _laserPointNode;
 SKShapeNode* _laserPointShapeNode;
 SKLabelNode* _gameOverText;
 
@@ -139,7 +138,7 @@ BOOL _isLaserPointOn = YES;
 
 - (void)touchMovedToPoint:(CGPoint)pos {
     
-    if ((pos.y>=_minYToReactToClick)&&!_isGameLost) {
+    if (pos.y>=_minYToReactToClick) {
         
     _angelOfCannon = [Geometry_Calculations findAngelToRotateCannonForPointOfTouch:pos andCannonPosition:_cannonPivotPoint withCannonShift:_cannonPositionShift];
         
@@ -150,7 +149,8 @@ BOOL _isLaserPointOn = YES;
     [_cannonSpriteNode runAction:cannotTurningAction];
     
     if (_isLaserPointOn) {
-        [_laserPointNode runAction:cannotTurningAction];
+        //[_laserPointNode runAction:cannotTurningAction];
+         [_laserPointShapeNode runAction:cannotTurningAction];
     }
        
     
@@ -161,7 +161,7 @@ BOOL _isLaserPointOn = YES;
     
     //firing possible every CANNON_RELOAD_TIME sec
     
-    if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=CANNON_RELOAD_TIME)&&!_isGameLost) {
+    if ((pos.y>=_minYToReactToClick)&&((time(NULL) - _currentTime)>=CANNON_RELOAD_TIME)) {
     
     
     _currentTime = (unsigned int)time(NULL);                //update current time counter
@@ -293,15 +293,11 @@ BOOL _isLaserPointOn = YES;
 
 - (void) turnOnLaserPoint: (BOOL) key {
 
-    [_laserPointNode setZRotation:_angelOfCannon];    //align the laser with the cannon angel in any case
+    [_laserPointShapeNode setZRotation:_angelOfCannon];                //align the laser with the cannon angel in any case
+
     
-    if (![_laserPointNode inParentHierarchy:self]&&key){
+    if (![_laserPointShapeNode inParentHierarchy:self]&&key){                //the first use of the laser point
   
-        //check if we created path before
-        
-        if (CGPathIsEmpty(_laserPointShapeNode.path)) {
-            
-        
         _laserPointShapeNode = [SKShapeNode node];
         CGMutablePathRef pathToDraw = CGPathCreateMutable();
         
@@ -313,17 +309,15 @@ BOOL _isLaserPointOn = YES;
         [_laserPointShapeNode setStrokeColor:[SKColor redColor]];
         [_laserPointShapeNode setGlowWidth:3];
         [_laserPointShapeNode setLineWidth:2];
+        [_laserPointShapeNode setPosition:_cannonPivotPoint];
         
-        _laserPointNode = [SKNode node];
-        [_laserPointNode addChild:_laserPointShapeNode];
-        [_laserPointNode setPosition:_cannonPivotPoint];
-    
-        }
-
-        [self addChild:_laserPointNode];
+        [self addChild:_laserPointShapeNode];
+        
     }
     else {
-        [_laserPointNode setHidden:!key];
+        
+        [_laserPointShapeNode setHidden:!key];
+
     }
     
 }
